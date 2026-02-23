@@ -1,0 +1,25 @@
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.0
+    hooks:
+      - id: ruff-check
+        args: [--fix]
+      - id: ruff-format
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    rev: 0.10.2
+    hooks:
+      - id: uv-lock
+  - repo: local
+    hooks:
+      - id: pytest
+        name: pytest
+        entry: coverage run -m pytest
+        language: system
+        pass_filenames: false
+        always_run: true
+      - id: coverage
+        name: coverage
+        entry: coverage report -m --fail-under=100
+        language: system
+        pass_filenames: false
+        always_run: true
