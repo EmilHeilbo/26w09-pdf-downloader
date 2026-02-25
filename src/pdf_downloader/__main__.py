@@ -5,6 +5,7 @@ import sqlite3 as sql
 import tomllib
 from sys import argv
 
+import httpx
 from pandas import read_excel  # type: ignore[reportUnknownVariableType]
 
 
@@ -21,6 +22,7 @@ def main(args: list[str]) -> None:
       CONFIG["settings"]["db_path"] or "reports.db",
       CONFIG["settings"]["excel_path"] or "base.xlsx",
     )
+
   except Exception as e:
     logging.error(f"Error creating reports table from Excel sheet: {e}")
 
@@ -42,6 +44,17 @@ def load_excel(db_path: str, excel_path: str) -> None:
         _ = df.to_sql("reports", conn, index=False)  # type: ignore[reportUnknownVariableType]
         conn.commit()
         logging.info("Created reports table from base.xlsx")
+
+
+def download_pdf(url: str, path: str) -> None:
+  with httpx.Client() as client:
+    client.follow_redirects = False
+    # Test if url is valid and returns a 2XX status code
+    _ = client.get(url, headers={"Range": "bytes=0-1"}).raise_for_status()
+    response = client.get(url)
+    # TODO: Handle non-PDF URLs
+    with open(path, "+wb") as file:
+      _ = file.write(response.content)
 
 
 if __name__ == "__main__":
