@@ -12,7 +12,8 @@ dependencies = [
   "pandas-stubs~=3.0.0",
   "pyqt6~=6.10.2",
   "pyqt6-stubs>=20250824",
-  "pyqt6-webengine>=6.10.0",
+  "pyqt6-webengine~=6.10.0",
+  "pyvirtualdisplay==3.0",
 ]
 
 [dependency-groups]
