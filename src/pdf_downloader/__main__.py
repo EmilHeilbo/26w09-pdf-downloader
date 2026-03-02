@@ -16,17 +16,30 @@ from PyQt6.QtWidgets import QApplication
 
 
 def main(args: list[str]) -> None:
-  # with open("/app/config.toml", "rb") as file:
-  #   CONFIG = tomllib.load(file)
   logging.basicConfig(level=logging.DEBUG)
   logging.info("Starting PDF Downloader")
+  logging.debug(f"Running in: {Path.cwd()}")
   logging.debug(f"args: {', '.join(args)}")
+  # Use arguments to define app dir
+  d_args: list[dict[str, str]] = []
+  for arg in args:
+    if arg.startswith("-"):
+      if "=" in arg:
+        args.remove(arg)
+        args += arg.split("=", 1)
+  for i in range(len(args)):
+    if args[i].startswith("-"):
+      d_args.append({args[i]: args[i + 1]})
+    else:
+      if len(args) > i + 1 and not args[i + 1].startswith("-"):
+        raise RuntimeError("Launch arguments are invalid.")
 
   # Check if sqlite database exists, and if not, import base.xlsx into database using pandas
   try:
-    IN_DOCKER = isfile("/.dockerenv")
-    db_path = Path("/app/reports.db") if IN_DOCKER else Path.home() / "reports.db"
-    excel_path = Path("/app/base.xlsx") if IN_DOCKER else Path.home() / "base.xlsx"
+    # Check if we're in a Docker container
+    DOCKER = isfile("/.dockerenv")
+    db_path = Path("/app/reports.db") if DOCKER else Path.cwd() / "reports.db"
+    excel_path = Path("/app/base.xlsx") if DOCKER else Path.cwd() / "base.xlsx"
     _df = load_main_table(db_path, excel_path)
 
   except Exception as e:
@@ -87,17 +100,14 @@ def save_pdf(input: httpx.Response, destination: Path) -> bool:
     with open(destination, "+wb") as file:
       _ = file.write(input.content)
       return True
-  (success, _) = convert_to_pdf(input)
-  return success
+  return convert_to_pdf(input, destination)
 
 
 def convert_to_pdf(input: httpx.Response, output_path: Path) -> bool:
-  """Convert a non-PDF response to PDF, returning a tuple of success status and response"""
+  """Attempt to convert a HTML response to PDF, returning the success status"""
   if "text/html" in input.headers.get("Content-Type"):
     # Convert HTML to PDF using PyQt6, returning the PDF as bytes
-    app = QApplication.instance()
-    if app is None:
-      app = QApplication(argv)
+    _app = QApplication.instance() or QApplication(argv)
 
     view = QWebEngineView()
     page = view.page()
@@ -113,10 +123,13 @@ def convert_to_pdf(input: httpx.Response, output_path: Path) -> bool:
     # Prepare for PDF generation
     print_loop = QEventLoop()
 
-    # Print directly to file
+    # Save directly to file
     page.printToPdf(output_path.as_posix())
-
     _ = print_loop.exec()
+  # Check if PDF file was created
+  if isfile(output_path):
+    with open(output_path, "rb", 4) as f:
+      return f.read().startswith("%PDF".encode("ascii"))
   return False
 
 
