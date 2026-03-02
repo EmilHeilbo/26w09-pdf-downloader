@@ -10,5 +10,6 @@ wheels/
 .venv
 
 # Application-specific files
-reports.db
-base.xlsx
+*.db
+*.xlsx
+*.pdf

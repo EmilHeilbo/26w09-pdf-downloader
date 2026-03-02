@@ -1,15 +1,20 @@
 FROM ghcr.io/astral-sh/uv:python3.14-trixie
 
-WORKDIR /app
-# Install dependencies, copy minimum required files for `uv sync` to work
+# Install dependencies
 RUN apt update
-RUN apt install -y libqt6{webenginecore,webview,gui}6 xvfb x11-utils gnumeric
+RUN /bin/bash -c "apt install -y libqt6{webenginecore,webview,gui}6 xvfb x11-utils gnumeric"
+RUN useradd -b / -m -s /bin/bash app
+
+# Copy minimum required files for `uv sync` to work
+USER app
+WORKDIR /app
+RUN ls -la .
 RUN uv venv
-COPY pyproject.toml uv.lock README.md ./
+COPY --chown=app: pyproject.toml uv.lock README.md ./
 RUN uv sync --no-dev --no-install-project
 
 # Copy the rest over and build
-COPY . .
+COPY --chown=app: . .
 RUN uv build
 
 # EXPOSE 8000
