@@ -1,6 +1,6 @@
 import logging
 import sys
-from os.path import isfile
+from pathlib import Path
 from typing import final
 
 from PyQt6.QtCore import QByteArray, QUrl
@@ -11,7 +11,9 @@ from PyQt6.QtWidgets import QApplication
 @final
 class PDFConverter:
   def __init__(self):
-    if sys.platform.startswith("linux") and isfile("/.dockerenv"):
+    if (
+      sys.platform.startswith("linux") and Path("/.dockerenv").exists()
+    ):  # pragma: no cover
       from pyvirtualdisplay.display import Display
 
       self.display = Display(visible=False, backend="xvfb").start()
