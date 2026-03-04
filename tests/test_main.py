@@ -18,9 +18,9 @@ TEMP_PDF_PATH = (
 
 
 def test_download_pdf():
-  Path("./reports.db").unlink(True)
+  Path("./out/reports.db").unlink(True)
   with Client(follow_redirects=False) as client:
-    APP = pdf.Application(Path.cwd(), client)
+    APP = pdf.Application(Path.cwd() / "out", client)
     PDFS = {
       "https://pdfobject.com/pdf/sample.pdf": "d68d3c8ca80f17920649763a7c4cc597a7b4f1b9464674e8",
       "https://theanarchistlibrary.org/library/the-solarpunk-community-a-solarpunk-manifesto.pdf": "ce83e394beb7abd51751a8d5a4484b3ce30184809b6ff41d",
@@ -37,7 +37,7 @@ def test_download_pdf():
 
 def test_html_to_pdf():
   with Client(follow_redirects=False) as client:
-    APP = pdf.Application(Path.cwd(), client)
+    APP = pdf.Application(Path.cwd() / "out", client)
     URL = "https://example.com"
     success, test = APP.test_url(URL)
     assert success
@@ -63,7 +63,7 @@ def test_is_file_newer():
 def test_bad_responses():
   URL = "https://free.mockerapi.com/"
   with Client() as client:
-    APP = pdf.Application(Path.cwd(), client)
+    APP = pdf.Application(Path.cwd() / "out", client)
     _, test_301 = APP.test_url(URL + "301")
     assert test_301.status_code == 301
     (_, test) = APP.test_url(URL + "200")
@@ -77,7 +77,7 @@ def test_expired_cert():
   URL = "https://expired.badssl.com"
   with Client() as client:
     with pytest.raises(ConnectError) as e:
-      APP = pdf.Application(Path.cwd(), client)
+      APP = pdf.Application(Path.cwd() / "out", client)
       _ = APP.test_url(URL)
     assert "validity" in str(e.value)
 
