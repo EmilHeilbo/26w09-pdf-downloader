@@ -41,3 +41,5 @@ def test_html_to_pdf():
 # TODO: test with https://free.mockerapi.com/<status_code>
 # TODO: test against eg. application/json
 # TODO: test download_pdf against empty body
+# TODO: test with https://badssl.com
+# TODO: ensure URL protocol is r"https?:"

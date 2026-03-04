@@ -267,7 +267,7 @@ wheels = [
 
 [[package]]
 name = "pdf-downloader"
-version = "2026.0.1"
+version = "2026.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "httpx" },
